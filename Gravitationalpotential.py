@@ -20,13 +20,19 @@ d = float(input("Enter d(>0):"))
 m = star1+star2
 x1 = -star2*d/m
 x2 = star1*d/m
+
+
+# !!!!!!!!!!!!!!!!!!!!!!!随便写了个半径
+banjin1 = d
+banjin2 = d
+
 #----------------------------------------------------------------------
 # 生成坐标系
 #---------------------------------------------------------------------
 
 # 生成向量(横坐标范围)
-x_axis = np.arange(-5.0,5.0,0.01)
-y_axis = np.arange(-5.0,5.0,0.01)
+x_axis = np.arange(-2.0,2.0,0.01)
+y_axis = np.arange(-2.0,2.0,0.01)
 # 生成矩阵(两个都是二维矩阵，表示一个点的横纵坐标)
 x_col,y_row=np.meshgrid(x_axis,y_axis)
 
@@ -70,7 +76,7 @@ plt.contour(x_col,y_row,ling,lines)
 #----------------------------------------------------------------------
 
 
-Sparse_vector = np.arange(-5.0,5.0,0.25) #这个矩阵关系到矢量的密度
+Sparse_vector = np.arange(-2.0,2.0,0.25) #这个矩阵关系到矢量的密度
 x_1,y_1=np.meshgrid(Sparse_vector,Sparse_vector)
 def accelerationU(x,y):
     if y == 0 and x == -d*star2/(star2+star1):
@@ -84,7 +90,7 @@ def accelerationV(x,y):
         return 0
     if y == 0 and x == d*star1/(star2+star1):
         return 0
-    return -star1/(((x-x1)**2+y**2)**1.5)*y-star2/(((x-x2)**2+y**2)**1.5)*y+m*x/(d**3)
+    return -star1/(((x-x1)**2+y**2)**1.5)*y-star2/(((x-x2)**2+y**2)**1.5)*y+m*y/(d**3)
 
 
 U = np.zeros(np.shape(x_1)) 
@@ -94,8 +100,12 @@ for i in range(0,len(x_1)):
         x_temp = x_1[i][j]
         y_temp = y_1[i][j]
         # 给二维的全0矩阵赋值
-        U[i][j]=accelerationU(x_temp,y_temp)
-        V[i][j]=accelerationV(x_temp,y_temp)
+        if mt.sqrt((x_temp-x1)**2+y_temp**2) > banjin1 and mt.sqrt((x_temp-x2)**2+y_temp**2) > banjin2: 
+            U[i][j]=accelerationU(x_temp,y_temp)
+            V[i][j]=accelerationV(x_temp,y_temp)
+        else:
+            U[i][j] = mt.nan
+            V[i][j] = mt.nan
 
 
 # #这个是生成矢量场的函数调用
