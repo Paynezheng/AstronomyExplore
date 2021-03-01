@@ -1,97 +1,185 @@
 # -*- coding: utf-8 -*-
 '''
-Author: yu
-Date: Thu Sep 27 16:29:22 2018
+Author: 小吉心
+Date: Unknown
 LastEditors: Payne
-LastEditTime: 2021-03-01 16:13:33
+LastEditTime: 2021-03-01 20:11:29
 Description: 
 '''
 
 
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[35]:
+
+
 import numpy as np
-from numpy import matrix as mat
-from matplotlib import pyplot as plt
-import random
-random.seed(0)
+import matplotlib.pyplot as plt
+import math
 
-n = 100
-a1,b1,c1 = 1,2,3      # 这个是需要拟合的函数y(x) 的真实参数
-h = np.linspace(0,1,n).reshape(100,1)       # 产生包含噪声的数据
-y = [np.exp(a1*i**2+b1*i+c1)+random.gauss(0,8) for i in h]
 
-J = mat(np.zeros((n,3)))      #雅克比矩阵
-fx = mat(np.zeros((n,1)))     # f(x)  100*1  误差
-fx_tmp = mat(np.zeros((n,1)))
-xk = mat([[2.4],[2.4],[2.4]])
-#xk = mat([[12.0],[12.0],[12.0]]) # 参数初始化
-lase_mse = 0
-step = 0
-u,v= 1,2
-conve = 10000
- 
-def Func(abc,iput):   # 需要拟合的函数，abc是包含三个参数的一个矩阵[[a],[b],[c]]
-    a = abc[0,0]
-    b = abc[1,0]
-    c = abc[2,0]
-    return np.exp(a*iput**2+b*iput+c)
- 
-def Deriv(abc,iput,n):  # 对函数求偏导
-    x1 = abc.copy()
-    x2 = abc.copy()
-    x1[n,0] -= 0.000001
-    x2[n,0] += 0.000001
-    p1 = Func(x1,iput)
-    p2 = Func(x2,iput)
-    d = (p2-p1)*1.0/(0.000002)
-    return d
-         
-while (conve):
-       
-    mse,mse_tmp = 0,0
-    step += 1  
-    fx = Func(xk,h) - y
-    mse += sum(fx**2)
-    for j in range(3): 
-        J[:,j] = Deriv(xk,h,j) # 数值求导                                                    
-    mse /= n  # 范围约束
- 
-    H = J.T*J + u*np.eye(3)   # 3*3
-    dx = -H.I * J.T*fx        # 
-    xk_tmp = xk.copy()
-    xk_tmp += dx
-    fx_tmp =  Func(xk_tmp,h) - y  
-    mse_tmp = sum(fx_tmp[:,0]**2)
-    mse_tmp /= n
-    #判断是否下降
-    q = float((mse - mse_tmp)/((0.5*dx.T*(u*dx - J.T*fx))[0,0]))
-    if q > 0:
-        s = 1.0/3.0
-        v = 2
-        mse = mse_tmp
-        xk = xk_tmp
-        temp = 1 - pow(2*q-1,3)
- 
-        if s > temp:
-            u = u*s
-        else:
-            u = u*temp
-    else:
-        u = u*v
-        v = 2*v
-        xk = xk_tmp
- 
-    print ("step = %d,abs(mse-lase_mse) = %.8f" %(step,abs(mse-lase_mse)))  
-    if abs(mse-lase_mse)<0.000001:
-        break
-       
-    lase_mse = mse  # 记录上一个 mse 的位置
-    conve -= 1
-print (xk)
-#用拟合好的参数画图
-z = [Func(xk,i) for i in h]
- 
-plt.figure(0)
-plt.scatter(h,y,s = 4)
-plt.plot(h,z,'r')
+file = "./hw2_fitting.dat"
+data = np.loadtxt(file)
+print(data.shape)
+
+
+# In[36]:
+
+
+xi =data[:,0]
+yi =data[:,1]
+sigmai =data[:,2]
+print(xi.shape)
+print(yi.shape)
+print(sigmai.shape)
+
+
+# In[37]:
+
+
+def Loren(v,v0,L):
+    return L/(math.pi*((v-v0)**2+L**2))
+
+print(Loren(50,40,10))
+
+plt.plot(xi,Loren(xi,46.269,7.545))
+# show 只出现一次(绘制在一张图上)
+# plt.show()
+
+def pvLoren(v,v0,L):
+    return 2*(v-v0)*L/(math.pi*((v-v0)**2+L**2)**2)
+
+print(pvLoren(50,40,10))
+
+def plLoren(v,v0,L):
+    return ((v-v0)**2-L**2)/(math.pi*((v-v0)**2+L**2)**2)
+
+print(plLoren(50,40,10))
+
+def chisqLoren(v0,L):
+    return np.sum(((yi-Loren(xi,v0,L))/sigmai)**2)
+
+def pchisqLoren(v0,L):
+    return np.matrix([np.sum(2*(Loren(xi,v0,L)-yi)*pvLoren(xi,v0,L)/sigmai**2),np.sum((Loren(xi,v0,L)-yi)*plLoren(xi,v0,L)/sigmai**2)])
+
+print(chisqLoren(46.269,7.545))
+
+
+# In[38]:
+
+
+def exp(v,v0,D):
+    return np.exp((-math.log(2))*(v-v0)**2/D**2)
+
+def Gaus(v,v0,D):
+    return exp(v,v0,D)*math.sqrt(math.log(2))/(math.sqrt(math.pi)*D)
+
+print(Gaus(50,40,10))
+plt.plot(xi,Gaus(xi,44.954,15.026))
+# #####################################################
+# plt.show()
+
+def pvGaus(v,v0,D):
+    return exp(v,v0,D)*(2*math.log(2)**(3/2)*(v-v0))/(D**3*math.sqrt(math.pi))
+
+print(pvGaus(50,40,10))
+
+def pdGaus(v,v0,D):
+    return exp(v,v0,D)*math.sqrt(math.log(2))*(2*math.log(2)*(v-v0)**2-D**2)/(D**4*math.sqrt(math.pi))
+
+print(pdGaus(50,40,10))
+
+def chisqGaus(v0,D):
+    return np.sum(((yi-Gaus(xi,v0,D))/sigmai)**2)
+
+def pchisqGaus(v0,D):
+    return np.matrix([np.sum(2*(Gaus(xi,v0,D)-yi)*pvGaus(xi,v0,D)/sigmai**2),np.sum((Gaus(xi,v0,D)-yi)*pdGaus(xi,v0,D)/sigmai**2)])
+
+print(chisqGaus(44.954,15.026))
+
+##########################################################
+plt.errorbar(xi, yi, sigmai)
 plt.show()
+##########################################################
+
+
+# In[39]:
+
+
+def LMmethodLoren(v0,L,e):
+    chisq_new = 0
+    chisq_old = 1
+    while abs(chisq_old - chisq_new)/chisq_old > 0.000001:
+        chisq_old = chisqLoren(v0,L)
+        A = np.zeros([2,2])
+        A[0,0] = np.sum((pvLoren(xi,v0,L)/sigmai)**2)
+        A[0,1] = np.sum(pvLoren(xi,v0,L)*plLoren(xi,v0,L)/sigmai**2)
+        A[1,0] = np.sum(pvLoren(xi,v0,L)*plLoren(xi,v0,L)/sigmai**2)
+        A[1,1] = np.sum((plLoren(xi,v0,L)/sigmai)**2)
+        A1 = np.zeros(A.shape)
+        for i in range(2):
+            for j in range(2):
+                if i == j:
+                    A1[i,j] = (1+e)*A[i,j]
+                else:
+                    A1[i,j] = A[i,j]
+        beta = np.transpose(-1*pchisqLoren(v0,L))
+        da = np.dot(np.linalg.inv(A1),beta)
+        v1 = v0 + da[0,0]
+        L1 = L + da[1,0]
+        chisq_new = chisqLoren(v1,L1)
+        if chisqLoren(v1,L1) >= chisqLoren(v0,L):
+            e = e*10
+        else:
+            e = e/10
+            v0 = v1
+            L = L1
+        #print(k,"",v0,"",L,chisqLoren(v0,L))
+    return (v0,L,chisqLoren(v0,L))
+    
+print(LMmethodLoren(50,15,0.001))
+
+
+# In[40]:
+
+
+def LMmethodGaus(v0,D,e):
+    chisq_new = 0
+    chisq_old = 1
+    while abs(chisq_old - chisq_new)/chisq_old > 0.000001:
+        chisq_old = chisqGaus(v0,D)
+        A = np.zeros([2,2])
+        A[0,0] = np.sum((pvGaus(xi,v0,D)/sigmai)**2)
+        A[0,1] = np.sum(pvGaus(xi,v0,D)*pdGaus(xi,v0,D)/sigmai**2)
+        A[1,0] = np.sum(pvGaus(xi,v0,D)*pdGaus(xi,v0,D)/sigmai**2)
+        A[1,1] = np.sum((pdGaus(xi,v0,D)/sigmai)**2)
+        A1 = np.zeros(A.shape)
+        for i in range(2):
+            for j in range(2):
+                if i == j:
+                    A1[i,j] = (1+e)*A[i,j]
+                else:
+                    A1[i,j] = A[i,j]
+        beta = np.transpose(-1*pchisqGaus(v0,D))
+        da = np.dot(np.linalg.inv(A1),beta)
+        v1 = v0 + da[0,0]
+        D1 = D + da[1,0]
+        chisq_new = chisqGaus(v1,D1)
+        if chisqGaus(v1,D1) >= chisqGaus(v0,D):
+            e = e*10
+        else:
+            e = e/10
+            v0 = v1
+            D = D1
+        #print(k,"",v0,"",D,GausLoren(v0,D))
+    return (v0,D,chisqGaus(v0,D))
+    
+print(LMmethodGaus(50,15,0.001))
+
+
+# In[ ]:
+
+
+
 
