@@ -3,7 +3,7 @@
 Author: 小吉心
 Date: Unknown
 LastEditors: Payne
-LastEditTime: 2021-03-01 20:32:45
+LastEditTime: 2021-03-01 20:36:56
 Description: 
 '''
 
@@ -141,8 +141,9 @@ def LMmethodLoren(v0,L,e):
         #print(k,"",v0,"",L,chisqLoren(v0,L))
     return (v0,L,chisqLoren(v0,L))
     
-print(LMmethodLoren(50,15,0.001))
-
+#执行此函数而不是print 此函数
+#print(LMmethodLoren(50,15,0.001))
+LMmethodLoren(50,15,0.001)
 
 # In[40]:
 
@@ -180,9 +181,10 @@ def LMmethodGaus(v0,D,e):
         print("alpha is",D)
         print("chi is",chisqGaus(v0,D))
     return #(v0,D,chisqGaus(v0,D))
-    
-print(LMmethodGaus(50,15,0.001))
 
+#执行此函数而不是print 此函数
+#print(LMmethodGaus(50,15,0.001))
+LMmethodGaus(50,15,0.001)
 
 # In[ ]:
 
