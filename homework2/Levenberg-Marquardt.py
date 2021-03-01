@@ -3,7 +3,7 @@
 Author: 小吉心
 Date: Unknown
 LastEditors: Payne
-LastEditTime: 2021-03-01 20:11:29
+LastEditTime: 2021-03-01 20:32:45
 Description: 
 '''
 
@@ -43,9 +43,7 @@ def Loren(v,v0,L):
 
 print(Loren(50,40,10))
 
-plt.plot(xi,Loren(xi,46.269,7.545))
-# show 只出现一次(绘制在一张图上)
-# plt.show()
+
 
 def pvLoren(v,v0,L):
     return 2*(v-v0)*L/(math.pi*((v-v0)**2+L**2)**2)
@@ -76,9 +74,7 @@ def Gaus(v,v0,D):
     return exp(v,v0,D)*math.sqrt(math.log(2))/(math.sqrt(math.pi)*D)
 
 print(Gaus(50,40,10))
-plt.plot(xi,Gaus(xi,44.954,15.026))
-# #####################################################
-# plt.show()
+
 
 def pvGaus(v,v0,D):
     return exp(v,v0,D)*(2*math.log(2)**(3/2)*(v-v0))/(D**3*math.sqrt(math.pi))
@@ -99,7 +95,14 @@ def pchisqGaus(v0,D):
 print(chisqGaus(44.954,15.026))
 
 ##########################################################
-plt.errorbar(xi, yi, sigmai)
+LevenBerg, = plt.plot(xi,Loren(xi,46.269,7.545))
+# show 只出现一次(绘制在一张图上)
+# plt.show()
+Gauss, = plt.plot(xi,Gaus(xi,44.954,15.026))
+ErrorBar = plt.errorbar(xi, yi, sigmai)
+# plt.legend(ErrorBar,'ErrorBar',loc = 'best')
+plt.legend(handles=[LevenBerg, Gauss, ErrorBar],labels=['LevenBerg','Gauss','ErrorBar'],loc='best')
+
 plt.show()
 ##########################################################
 
@@ -173,7 +176,10 @@ def LMmethodGaus(v0,D,e):
             v0 = v1
             D = D1
         #print(k,"",v0,"",D,GausLoren(v0,D))
-    return (v0,D,chisqGaus(v0,D))
+        print("v0 is ",v0)
+        print("alpha is",D)
+        print("chi is",chisqGaus(v0,D))
+    return #(v0,D,chisqGaus(v0,D))
     
 print(LMmethodGaus(50,15,0.001))
 
